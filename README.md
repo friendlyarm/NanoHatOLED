@@ -1,19 +1,19 @@
 ## **NanoHat OLED**
 
-Example code of correct use and start for the NanoHat OLED (http://wiki.friendlyarm.com/wiki/index.php/NanoHat_OLED).
+Example code of correct use and start for the NanoHat OLED (http://wiki.friendlyarm.com/wiki/index.php/NanoHat_OLED).  
 Currently supported boards: NanoPi NEO, NanoPi NEO Air.
 
 
 Installation
 ------------
-Execute the following command in the Ubuntu core system:  
+Execute the following command in the Ubuntu core system:    
 
 ```
 # git clone https://github.com/friendlyarm/NanoHatOLED.git
 # cd NanoHatOLED
 # sudo -H ./install.sh
 ```
-The demo will automatically start at the next reboot.
+The demo will automatically start at the next reboot.  
 
 ## License
 
