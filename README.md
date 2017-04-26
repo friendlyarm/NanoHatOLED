@@ -2,7 +2,7 @@
 
 Example code of correct use and start for the NanoHat OLED (http://wiki.friendlyarm.com/wiki/index.php/NanoHat_OLED).  
   
-Currently supported boards: NanoPi NEO, NanoPi NEO Air.
+Currently supported boards: NanoPi NEO, NanoPi NEO Air, NanoPi NEO2.
 
 
 Installation
