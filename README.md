@@ -1,8 +1,17 @@
 ## **NanoHat OLED**
 
-Example code of correct use and start for the NanoHat OLED (http://wiki.friendlyarm.com/wiki/index.php/NanoHat_OLED).  
-  
-Currently supported boards: NanoPi NEO, NanoPi NEO Air, NanoPi NEO2, NanoPi NEO Plus2.
+Example code of correct use and start for the NanoHat OLED.  
+
+Designed specifically to work with the NanoHat OLED:
+http://wiki.friendlyarm.com/wiki/index.php/NanoHat_OLED
+
+Currently supported boards (Plug & Play):
+* NanoPi NEO
+* NanoPi NEO Air
+* NanoPi NEO2
+* NanoPi NEO Plus2.
+
+Also support other development board with the i2c interface (Need to manually connect).  
 
 
 Installation
