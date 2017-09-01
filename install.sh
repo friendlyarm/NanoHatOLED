@@ -13,7 +13,7 @@ if [ ! -f /usr/local/bin/oled-start ]; then
 EOL
     echo "cd $PWD" >> /usr/local/bin/oled-start
     echo "./NanoHatOLED" >> /usr/local/bin/oled-start
-    sed -i -e '$i \/usr/local/bin/oled-start &\n' /etc/rc.local
+    sed -i -e '$i \/usr/local/bin/oled-start\n' /etc/rc.local
     chmod 755 /usr/local/bin/oled-start
 fi
 
