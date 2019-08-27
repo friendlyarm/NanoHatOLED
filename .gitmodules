@@ -1,0 +1,4 @@
+[submodule "BakeBit"]
+	path = BakeBit
+	url = https://github.com/CuitGGyy/BakeBit
+	branch = master
