@@ -57,6 +57,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 REAL_PATH=$(realpath $(dirname $0))
+#sed -i '/^#define.*DEBUG.*$/s/1/0/' "${REAL_PATH}/Source/daemonize.h"
 sed -i "/^#define.*PYTHON3_INTERP.*$/s/\".*\"/\"${PY3_INTERP}\"/" "${REAL_PATH}/Source/daemonize.h"
 
 echo ""
