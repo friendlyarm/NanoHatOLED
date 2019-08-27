@@ -31,9 +31,16 @@ THE SOFTWARE.
 #ifndef __DAEMONIZE__H__
 #define __DAEMONIZE__H__
 
-#define LOCKFILE "/var/run/nanohat-oled.pid"
+#define DEBUG           1
+#define LOG_FILE_NAME   "/tmp/nanohat-oled.log"
+#define LOCKFILE        "/var/run/nanohat-oled.pid"
+
+#define PYTHON3_INTERP  "python3.7"
+#define PYTHON3_SCRIPT  "bakebit_nanohat_oled.py"
+
 extern int isAlreadyRunning();
 extern void daemonize(const char *cmd);
+
 
 #endif
 

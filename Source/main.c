@@ -35,230 +35,41 @@ THE SOFTWARE.
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <signal.h>
-#include <time.h>  
+#include <time.h>
 #include <pthread.h>
 #include <dirent.h>
-#include <stdarg.h>
+
 #include "daemonize.h"
 
-//{{ daemon
-static int _debug = 1;
-#define PY3_FILE_NAME "python3.7"
-#define LOG_FILE_NAME "/tmp/nanohat-oled.log"
-static void _log2file(const char* fmt, va_list vl)
-{
-        FILE* file_out;
-        file_out = fopen(LOG_FILE_NAME,"a+");
-        if (file_out == NULL) {
-                return;
-        }
-        vfprintf(file_out, fmt, vl);
-        fclose(file_out);
-}
-void log2file(const char *fmt, ...)
-{
-        if (_debug) {
-                va_list vl;
-                va_start(vl, fmt);
-                _log2file(fmt, vl);
-                va_end(vl);
-        }
-}
-//}}
 
-const char* python_file = "bakebit_nanohat_oled.py";
-static int get_work_path(char* buff, int maxlen) {
-    ssize_t len = readlink("/proc/self/exe", buff, maxlen);
-    if (len == -1 || len == maxlen) {                         
-        return -1;                                            
-    }                                
-    buff[len] = '\0';
-                        
-    char *pos = strrchr(buff, '/');
-    if (pos != 0) {                   
-       *pos = '\0';                   
-    }              
-                   
-    return 0;
-}
+// ============================================================================
 
-static char workpath[255];
-static int py_pids[128];
-static int pid_count = 0;
-extern int find_pid_by_name( char* ProcName, int* foundpid);
-void send_signal_to_python_process(int signal) {
-    int i, rv;
-    if (pid_count == 0) {
-        //rv = find_pid_by_name( "python3.7", py_pids);
-        rv = find_pid_by_name(PY3_FILE_NAME, py_pids);
-        for(i=0; py_pids[i] != 0; i++) {
-            log2file("found python pid: %d\n", py_pids[i]);
-            pid_count++;
-        }
-    }
-    if (pid_count > 0) {
-        for(i=0; i<pid_count; i++) {
-            if (kill(py_pids[i], signal) != 0) { //maybe pid is invalid
-                pid_count = 0;
-                break;
-            }
-        }
-    }
-}
 
-pthread_t view_thread_id = 0;
-void* threadfunc(char* arg) {
-    pthread_detach(pthread_self());
-    if (arg) {
-        char* cmd = arg;
-        system(cmd);
-        free(arg);
-    }
-}
+extern void log2file(const char *fmt, ...);
 
-int load_python_view() {
-    int ret;
-    char* cmd = (char*)malloc(255);
-    sprintf(cmd, "cd %s/BakeBit/Software/Python && python3 %s 2>&1 | tee /tmp/nanoled-python.log", workpath, python_file);
-    ret = pthread_create(&view_thread_id, NULL, (void*)threadfunc,cmd);
-    if(ret) {
-        log2file("create pthread error \n");
-        return 1;
-    }
-    return 0;
-}
 
-int find_pid_by_name( char* ProcName, int* foundpid) {
-    DIR             *dir;
-    struct dirent   *d;
-    int             pid, i;
-    char            *s;
-    int pnlen;
+int get_work_path(char* buff, int maxlen);
 
-    i = 0;
-    foundpid[0] = 0;
-    pnlen = strlen(ProcName);
+int init_gpio(int gpio, char* edge);
+void release_gpio(int gpio);
 
-    /* Open the /proc directory. */
-    dir = opendir("/proc");
-    if (!dir)
-    {
-        log2file("cannot open /proc");
-        return -1;
-    }
+int load_python_view();
+void send_signal_to_python_process(int signal);
 
-    /* Walk through the directory. */
-    while ((d = readdir(dir)) != NULL) {
 
-        char exe [PATH_MAX+1];
-        char path[PATH_MAX+1];
-        int len;
-        int namelen;
+// ============================================================================
 
-        /* See if this is a process */
-        if ((pid = atoi(d->d_name)) == 0)       continue;
-
-        snprintf(exe, sizeof(exe), "/proc/%s/exe", d->d_name);
-        if ((len = readlink(exe, path, PATH_MAX)) < 0)
-            continue;
-        path[len] = '\0';
-
-        /* Find ProcName */
-        s = strrchr(path, '/');
-        if(s == NULL) continue;
-        s++;
-
-        /* we don't need small name len */
-        namelen = strlen(s);
-        if(namelen < pnlen)     continue;
-
-        if(!strncmp(ProcName, s, pnlen)) {
-            //printf("procname: %s, pid: %d\n", ProcName, pid); // NOTE: this line for debug
-            /* to avoid subname like search proc tao but proc taolinke matched */
-            if(s[pnlen] == ' ' || s[pnlen] == '\0') {
-                foundpid[i] = pid;
-                i++;
-            }
-        }
-    }
-    foundpid[i] = 0;
-    closedir(dir);
-    return  0;
-}
-
-int init_gpio(int gpio, char* edge) {
-    char path[42];
-    FILE *fp;
-    int fd;
-
-    // export gpio to userspace
-    fp = fopen("/sys/class/gpio/export", "w");
-    if (fp) {
-        fprintf(fp, "%d\n", gpio);
-        fclose(fp);
-    }
-
-    // set output direction
-    sprintf(path, "/sys/class/gpio/gpio%d/direction", gpio);
-    fp = fopen(path, "w");
-    if (fp) {
-        fprintf(fp, "%s\n", "in");
-        fclose(fp);
-    }
-
-    // falling edge
-    sprintf(path, "/sys/class/gpio/gpio%d/edge", gpio);
-    fp = fopen(path, "w");
-    if (fp) {
-        fprintf(fp, "%s\n", edge);
-        fclose(fp);
-    }
-
-    sprintf(path, "/sys/class/gpio/gpio%d/value", gpio);
-    fd = open(path, O_RDWR | O_NONBLOCK);
-    if (fd < 0) {
-        log2file("open of gpio %d returned %d: %s\n",
-                gpio, fd, strerror(errno));
-    }
-
-    return fd;
-}
-
-void release_gpio(int gpio) {
-    FILE* fp = fopen("/sys/class/gpio/unexport", "w");
-    if (fp) {
-        fprintf(fp, "%d\n", gpio);
-        fclose(fp);
-    }
-}
 
 static int gpio_d0=0, gpio_d1=2, gpio_d2=3;
 static int epfd=-1;
 static int fd_d0=-1, fd_d1=-1, fd_d2=-1;
-void sig_handler( int sig)
-{
-    if(sig == SIGINT){
-        if (epfd>=0) {
-            close(epfd);
-        }
-        if (fd_d0>=0) {
-            close(fd_d0);
-            release_gpio(gpio_d0);
-        }
-        if (fd_d1>=0) {
-            close(fd_d1);
-            release_gpio(gpio_d1);
-        }
-        if (fd_d2>=0) {
-            close(fd_d2);
-            release_gpio(gpio_d2);
-        }
-        log2file("ctrl+c has been keydownd\n");
-        exit(0);
-    }
-}
 
-int main(int argc, char** argv) {
+
+// ============================================================================
+
+
+int main(int argc, char* argv[]) {
+    char workpath[255];
     struct epoll_event ev_d0, ev_d1, ev_d2;
     struct epoll_event events[10];
     unsigned int value = 0;
@@ -269,7 +80,7 @@ int main(int argc, char** argv) {
     if (isAlreadyRunning() == 1) {
         exit(3);
     }
-    /*daemonize( "nanohat-oled" );*/
+    daemonize("nanohat-oled");
 
     int ret = get_work_path(workpath, sizeof(workpath));
     if (ret != 0) {
@@ -327,7 +138,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    load_python_view();
+    load_python_view(workpath);
     while (1) {
         n = epoll_wait(epfd, events, 10, 15);
 
@@ -363,5 +174,220 @@ int main(int argc, char** argv) {
     }
 
     return 0;
+}
+
+
+//// search /proc/self/exe and get process work path
+int get_work_path(char* buff, int maxlen) {
+    ssize_t len = readlink("/proc/self/exe", buff, maxlen);
+    if (len == -1 || len == maxlen) {
+        return -1;
+    }
+    buff[len] = '\0';
+
+    char *pos = strrchr(buff, '/');
+    if (pos != 0) {
+       *pos = '\0';
+    }
+    return 0;
+}
+
+
+//// initialize gpio fd
+int init_gpio(int gpio, char* edge) {
+    char path[42];
+    FILE *fp;
+    int fd;
+
+    // export gpio to userspace
+    fp = fopen("/sys/class/gpio/export", "w");
+    if (fp) {
+        fprintf(fp, "%d\n", gpio);
+        fclose(fp);
+    }
+
+    // set output direction
+    sprintf(path, "/sys/class/gpio/gpio%d/direction", gpio);
+    fp = fopen(path, "w");
+    if (fp) {
+        fprintf(fp, "%s\n", "in");
+        fclose(fp);
+    }
+
+    // falling edge
+    sprintf(path, "/sys/class/gpio/gpio%d/edge", gpio);
+    fp = fopen(path, "w");
+    if (fp) {
+        fprintf(fp, "%s\n", edge);
+        fclose(fp);
+    }
+
+    sprintf(path, "/sys/class/gpio/gpio%d/value", gpio);
+    fd = open(path, O_RDWR | O_NONBLOCK);
+    if (fd < 0) {
+        log2file("open of gpio %d returned %d: %s\n",
+                gpio, fd, strerror(errno));
+    }
+
+    return fd;
+}
+
+//// close gpio and fd
+void release_gpio(int gpio) {
+    FILE* fp = fopen("/sys/class/gpio/unexport", "w");
+    if (fp) {
+        fprintf(fp, "%d\n", gpio);
+        fclose(fp);
+    }
+}
+
+
+//// according signal to handle gpio fd
+//// NOTE: just a demo, but NOT use the function in this main.c
+void sig_handler(int sig)
+{
+    if(sig == SIGINT){
+        if (epfd>=0) {
+            close(epfd);
+        }
+        if (fd_d0>=0) {
+            close(fd_d0);
+            release_gpio(gpio_d0);
+        }
+        if (fd_d1>=0) {
+            close(fd_d1);
+            release_gpio(gpio_d1);
+        }
+        if (fd_d2>=0) {
+            close(fd_d2);
+            release_gpio(gpio_d2);
+        }
+        log2file("ctrl+c has been keydown\n");
+        exit(0);
+    }
+}
+
+
+// ============================================================================
+
+
+//// pthread preparation
+pthread_t view_thread_id = 0;
+void* threadfunc(char* arg) {
+    pthread_detach(pthread_self());
+    if (arg) {
+        char* cmd = arg;
+        system(cmd);
+        free(arg);
+    }
+}
+
+//// threading python view
+int load_python_view(char *workpath) {
+    int ret;
+    char* cmd = (char*)malloc(255);
+    sprintf(cmd, "cd %s/BakeBit/Software/Python && python3 %s 2>&1 | tee /tmp/nanoled-python.log", workpath, PYTHON3_SCRIPT);
+    ret = pthread_create(&view_thread_id, NULL, (void*)threadfunc, cmd);
+    if(ret) {
+        log2file("create pthread error \n");
+        return 1;
+    }
+    return 0;
+}
+
+
+// ============================================================================
+
+
+//// find and get the pid in /proc by process name with exact match.
+int find_pid_by_name( char* ProcName, int* foundpid) {
+    DIR             *dir;
+    struct dirent   *d;
+    int             pid, i;
+    char            *s;
+    int             pnlen;
+
+    i = 0;
+    foundpid[0] = 0;
+    pnlen = strlen(ProcName);
+
+    /* Open the /proc directory. */
+    dir = opendir("/proc");
+    if (!dir)
+    {
+        log2file("cannot open /proc");
+        return -1;
+    }
+
+    /* Walk through the directory. */
+    while ((d = readdir(dir)) != NULL) {
+
+        char exe [PATH_MAX+1];
+        char path[PATH_MAX+1];
+        int len;
+        int namelen;
+
+        /* See if this is a process */
+        if ((pid = atoi(d->d_name)) == 0) {
+            continue;
+        }
+
+        snprintf(exe, sizeof(exe), "/proc/%s/exe", d->d_name);
+        if ((len = readlink(exe, path, PATH_MAX)) < 0) {
+            continue;
+        }
+        path[len] = '\0';
+
+        /* Find ProcName */
+        s = strrchr(path, '/');
+        if (s == NULL) {
+            continue;
+        }
+        s++;
+
+        /* we don't need small name len */
+        namelen = strlen(s);
+        if (namelen < pnlen) {
+            continue;
+        }
+
+        if (!strncmp(ProcName, s, pnlen)) {
+            /* to avoid subname like search proc tao but proc taolinke matched */
+            if (s[pnlen] == ' ' || s[pnlen] == '\0') {
+                if (DEBUG) {
+                    log2file("found pid %d\n", pid);
+                }
+                foundpid[i] = pid;
+                i++;
+            }
+        }
+    }
+    foundpid[i] = 0;
+    closedir(dir);
+    return 0;
+}
+
+
+//// find python process pid and send signal to the process
+static int py_pids[128];
+static int pid_count = 0;
+void send_signal_to_python_process(int signal) {
+    int i, rv;
+    if (pid_count == 0) {
+        //rv = find_pid_by_name( "python3.7", py_pids);
+        rv = find_pid_by_name(PYTHON3_INTERP, py_pids);
+        for(i=0; py_pids[i] != 0; i++) {
+            log2file("found python pid: %d\n", py_pids[i]);
+            pid_count++;
+        }
+    }
+    if (pid_count > 0) {
+        for(i=0; i<pid_count; i++) {
+            if (kill(py_pids[i], signal) != 0) { //maybe pid is invalid
+                pid_count = 0;
+                break;
+            }
+        }
+    }
 }
 

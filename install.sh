@@ -50,14 +50,14 @@ if [ ! -f /usr/bin/python3 ]; then
     exit 1
 fi
 
-PY3EXE=`readlink /usr/bin/python3`
+PY3_INTERP=`readlink /usr/bin/python3`
 RET=$?
 if [ $? -ne 0 ]; then
     echo "No executable python3, exiting."
     exit 1
 fi
 REAL_PATH=$(realpath $(dirname $0))
-sed -i "/^#define.*PY3_FILE_NAME.*$/s/\".*\"/\"${PY3EXE}\"/" "${REAL_PATH}/Source/main.c"
+sed -i "/^#define.*PYTHON3_INTERP.*$/s/\".*\"/\"${PY3_INTERP}\"/" "${REAL_PATH}/Source/daemonize.h"
 
 echo ""
 echo "Compiling with GCC ..."
