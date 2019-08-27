@@ -14,12 +14,12 @@ Currently supported boards (Plug & Play):
 Also support other development board with the i2c interface (Need to manually connect).  
 
 
-Installation
-------------
+## Installation
+
 Execute the following command in the Ubuntu core system:    
 
 ```
-# git clone https://github.com/friendlyarm/NanoHatOLED.git
+# git clone https://github.com/CuitGGyy/NanoHatOLED.git
 # cd NanoHatOLED
 # sudo -H ./install.sh
 ```

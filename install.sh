@@ -14,8 +14,8 @@ echo ""
 sleep 3
 
 echo ""
-echo "Checking Internet Connectivity ..."
-echo "=================================="
+echo "Checking Internet Connectivity..."
+echo "================================="
 wget -q --tries=2 --timeout=100 http://www.baidu.com -O /dev/null
 if [ $? -eq 0 ];then
     echo "Connected"
@@ -25,8 +25,8 @@ else
 fi
 
 echo ""
-echo "Checking for User ID..."
-echo "======================="
+echo "Checking User ID..."
+echo "==================="
 if [ $(id -u) -eq 0 ]; then
     echo "$(whoami)"
 else
@@ -50,14 +50,14 @@ if [ ! -f /usr/bin/python3 ]; then
     exit 1
 fi
 
-PY3_EXE=`readlink /usr/bin/python3`
+PY3EXE=`readlink /usr/bin/python3`
 RET=$?
 if [ $? -ne 0 ]; then
     echo "No executable python3, exiting."
     exit 1
 fi
 REAL_PATH=$(realpath $(dirname $0))
-sed -i "/^#define.*PY3_FILE_NAME.*$/s/\".*\"/\"${PY3_EXE}\"/" "${REAL_PATH}/Source/main.c"
+sed -i "/^#define.*PY3_FILE_NAME.*$/s/\".*\"/\"${PY3EXE}\"/" "${REAL_PATH}/Source/main.c"
 
 echo ""
 echo "Compiling with GCC ..."

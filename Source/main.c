@@ -43,7 +43,7 @@ THE SOFTWARE.
 
 //{{ daemon
 static int _debug = 1;
-#define PY3_FILE_NAME python3.7
+#define PY3_FILE_NAME "python3.7"
 #define LOG_FILE_NAME "/tmp/nanohat-oled.log"
 static void _log2file(const char* fmt, va_list vl)
 {
