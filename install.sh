@@ -79,7 +79,7 @@ echo "Make NanoHatOLED autostart."
 
 if [ ! -f BakeBit/install.sh ]; then
     git submodule init
-    git submodule update
+    git submodule update --remote
 fi
 
 cd BakeBit/
