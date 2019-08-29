@@ -8,7 +8,7 @@ echo ""
 echo "Steps:"
 echo "Installs package dependencies:"
 echo "  - python3       interactive high-level object-oriented language, python3 version"
-echo "  - python3-dev   header files and a static library for Python3"
+#echo "  - python3-dev   header files and a static library for Python3"
 echo "  - BakeBit       an open source platform for connecting BakeBit Sensors to the Pi"
 echo ""
 sleep 3
@@ -42,7 +42,8 @@ sudo apt-get update --yes
 echo ""
 echo "Installing Dependencies"
 echo "======================="
-sudo apt-get install gcc python3 python3-dev -y
+#sudo apt-get install gcc python3 python3-dev -y
+sudo apt-get install gcc python3 -y
 echo "Dependencies installed"
 
 if [ ! -f /usr/bin/python3 ]; then
