@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o errexit -o nounset -o pipefail]
+set -o errexit -o nounset -o pipefail
 
 echo ""
 echo "Welcome to NanoHatOLED Installer."
