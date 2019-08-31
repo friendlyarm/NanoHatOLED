@@ -1,4 +1,7 @@
-#!/bin/bash -euo pipefail
+#!/bin/bash
+set -o errexit -o nounset -o pipefail]
+
+echo ""
 echo "Welcome to NanoHatOLED Installer."
 echo ""
 echo "Requirements:"
