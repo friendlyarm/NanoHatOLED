@@ -84,5 +84,5 @@ if [ ! -f BakeBit/install.sh ]; then
 fi
 
 cd BakeBit/
-sudo ./install.sh
+sudo ./install-compat.sh
 
