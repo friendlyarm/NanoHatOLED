@@ -35,7 +35,7 @@ THE SOFTWARE.
 #define LOG_FILE_NAME   "/tmp/nanohat-oled.log"
 #define LOCKFILE        "/var/run/nanohat-oled.pid"
 
-#define PYTHON3_INTERP  "python3.7"
+#define PYTHON3_INTERP  "python3.8"
 #define PYTHON3_SCRIPT  "bakebit_nanohat_oled.py"
 
 extern int isAlreadyRunning();

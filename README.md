@@ -16,26 +16,27 @@ Also support other development board with the i2c interface (Need to manually co
 
 ## Introduction
 
-This fork based on https://github.com/friendlyarm/NanoHatOLED
 Aim to compatible with Python3.x and standard C. No Python2.x, no C++.
+
+The original implementation was based on Python2.x, thanks to [CuitGGyy](https://github.com/CuitGGyy/NanoHatOLED) for porting it to Python 3.x environment.
 
 
 ## Installation
 
-#### Armbian Buster / Ubuntu Core Bionic
+#### FriendlyCore Xenial / Armbian Stretch / Ubuntu Core Xenial
 Execute the following command in the operating system:
 
 ```
-# git clone --depth=1 https://github.com/CuitGGyy/NanoHatOLED.git
+# git clone --depth=1 https://github.com/friendlyarm/NanoHatOLED.git
 # cd NanoHatOLED
 # sudo -H ./install.sh
 ```
 
-#### Armbian Stretch / Ubuntu Core Xenial
+#### FriendlyCore Focal / Armbian Buster / Ubuntu Core Bionic
 Execute the following command in the operating system:
 
 ```
-# git clone --depth=1 https://github.com/CuitGGyy/NanoHatOLED.git
+# git clone --depth=1 https://github.com/friendlyarm/NanoHatOLED.git
 # cd NanoHatOLED
 # sudo -H ./install-compat.sh
 ```

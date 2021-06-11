@@ -1,4 +1,4 @@
 [submodule "BakeBit"]
 	path = BakeBit
-	url = https://github.com/CuitGGyy/BakeBit
+	url = https://github.com/friendlyarm/BakeBit
 	branch = master
